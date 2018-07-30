@@ -24,6 +24,14 @@ defmodule CashAddr do
 
   @uint5_max_value 31
 
+  # hash sizes
+  for {hash_size_value, index} <- Enum.with_index([160, 192, 224, 256, 320, 384, 448, 512]) do
+    defp hash_size(unquote(index)), do: unquote(hash_size_value)
+    defp encode_hash_size(unquote(hash_size_value)), do: unquote(index)
+  end
+
+  defp encode_hash_size(_), do: raise(ArgumentError)
+
   @doc ~S"""
   Encode a CashAddr string.
 
@@ -127,6 +135,43 @@ defmodule CashAddr do
       _ -> {:error, "Unknown error"}
     end
   end
+
+  @doc ~S"""
+  Encodes hash as CashAddr payload
+
+  ## Examples
+
+      iex> CashAddr.encode_payload(0, <<118, 160, 64, 83, 189, 160, 168, 139, 218, 81, 119, 184, 106, 21, 195, 178, 159, 85, 152, 115>>)
+      <<0, 118, 160, 64, 83, 189, 160, 168, 139, 218, 81, 119, 184, 106, 21, 195, 178, 159, 85, 152, 115>>
+  """
+  def encode_payload(type, hash)
+      when is_integer(type) and type >= 0 and type <= 15 and is_binary(hash) do
+    encoded_hash_size = encode_hash_size(byte_size(hash) * 8)
+    <<0::1, type::4, encoded_hash_size::3>> <> hash
+  end
+
+  @doc ~S"""
+  Decode a CashAddr payload. Retrns tuple containing address type, hash size and hash
+
+  ## Examples
+
+      iex> CashAddr.decode_payload(<<0, 118, 160, 64, 83, 189, 160, 168, 139, 218, 81, 119, 184, 106, 21, 195, 178, 159, 85, 152, 115>>)
+      {:ok, {0, 160, <<118, 160, 64, 83, 189, 160, 168, 139, 218, 81, 119, 184, 106, 21, 195, 178, 159, 85, 152, 115>>}}
+  """
+  def decode_payload(<<version_byte::binary-size(1), rest::binary>>) do
+    <<reserved_bit::1, type::4, encoded_hash_size::3>> = version_byte
+
+    with {_, true} <- {:invalid_reserved_bit, reserved_bit == 0},
+         hash_size <- hash_size(encoded_hash_size),
+         {_, true} <- {:invalid_hash_size, byte_size(rest) * 8 == hash_size} do
+      {:ok, {type, hash_size, rest}}
+    else
+      {:invalid_reserved_bit, _} -> {:error, "Invalid reserved bit in version byte"}
+      {:invalid_hash_size, _} -> {:error, "Invalid payload hash size"}
+    end
+  end
+
+  def decode_payload(<<>>), do: {:error, "No version byte"}
 
   # Create a checksum.
   defp create_checksum(hrp, data) do
