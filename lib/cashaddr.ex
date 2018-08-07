@@ -43,13 +43,12 @@ defmodule CashAddr do
       iex> CashAddr.encode("bitcoincash", <<0, 111, 75, 112, 94, 62, 4, 7, 191, 49, 89, 233, 196, 5, 13, 241, 183, 145, 210, 195, 246>>)
       "bitcoincash:qph5kuz78czq00e3t85ugpgd7xmer5kr7c5f6jdpwk"
   """
-  @spec encode(String.t(), String.t()) :: String.t()
+  @spec encode(String.t(), binary()) :: String.t()
   def encode(hrp, data) when is_binary(data) do
     do_encode(hrp, split(data, []))
   end
 
-  @spec encode(String.t(), list(integer)) :: String.t()
-  def do_encode(hrp, data) when is_list(data) do
+  defp do_encode(hrp, data) when is_list(data) do
     checksummed = data ++ create_checksum(hrp, data)
     dp = for i <- checksummed, into: "", do: <<do_encode32(i)>>
     <<hrp::binary, @separator, dp::binary>>
@@ -89,7 +88,7 @@ defmodule CashAddr do
       {:ok, {"bitcoincash",
         <<0, 111, 75, 112, 94, 62, 4, 7, 191, 49, 89, 233, 196, 5, 13, 241, 183, 145, 210, 195, 246>>}}
   """
-  @spec decode(String.t()) :: {:ok, {String.t(), list(integer)}} | {:error, String.t()}
+  @spec decode(String.t()) :: {:ok, {String.t(), binary()}} | {:error, String.t()}
   def decode(bech) do
     with {_, false} <- {:mixed, String.downcase(bech) != bech && String.upcase(bech) != bech},
          bech_charlist = :binary.bin_to_list(bech),
