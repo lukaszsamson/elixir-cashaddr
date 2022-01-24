@@ -200,7 +200,7 @@ defmodule CashAddr do
       Enum.reduce(data, 1, fn d, c ->
         if d > @uint5_max_value or d < 0, do: raise(ArgumentError)
         c0 = c >>> 35
-        c = ((c &&& 0x07FFFFFFFF) <<< 5) ^^^ d
+        c = bxor((c &&& 0x07FFFFFFFF) <<< 5, d)
 
         Enum.reduce(for(i <- 0..4, do: i), c, fn i, c ->
           g =
@@ -210,10 +210,10 @@ defmodule CashAddr do
               0
             end
 
-          c ^^^ g
+          bxor(c, g)
         end)
       end)
 
-    c ^^^ 1
+    bxor(c, 1)
   end
 end
