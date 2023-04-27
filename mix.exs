@@ -1,7 +1,7 @@
 defmodule CashAddr.MixProject do
   use Mix.Project
 
-  @version "1.0.2"
+  @version "1.0.3"
   @source_url "https://github.com/lukaszsamson/elixir-cashaddr"
 
   def project do
@@ -32,7 +32,8 @@ defmodule CashAddr.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ex_doc, "~> 0.19", only: :dev}
+      {:ex_doc, "~> 0.19", only: :dev, runtime: false},
+      {:jason, "~> 1.4", only: :test}
     ]
   end
 

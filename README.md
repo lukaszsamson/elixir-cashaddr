@@ -2,6 +2,7 @@
 
 Library for decoding and validating CashAddr btc cash addresses.
 Implements CashAddr encoding and decoding specified by [Address format for Bitcoin Cash v 1.0](https://github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/cashaddr.md)
+as well as CashToken aware addresses [CashToken](https://github.com/bitjson/cashtokens#cashaddress-token-support).
 
 ## Installation
 
