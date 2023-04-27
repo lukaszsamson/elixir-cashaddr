@@ -1,5 +1,5 @@
 defmodule CashAddr do
-  use Bitwise
+  import Bitwise
 
   @moduledoc ~S"""
   Encode and decode the CashAddr format, with checksums.
