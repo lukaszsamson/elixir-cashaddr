@@ -686,4 +686,13 @@ defmodule CashAddrTest do
       assert CashAddr.encode(prefix, data) == address
     end
   end
+
+  test "P2SH-32" do
+    {:ok, {"bitcoincash", data}} =
+      CashAddr.decode("bitcoincash:pwqwzrf7z06m7nn58tkdjyxqfewanlhyrpxysack85xvf3mt0rv02l9dxc5uf")
+
+    {:ok, 1, 256,
+     <<128, 225, 13, 62, 19, 245, 191, 78, 116, 58, 236, 217, 16, 192, 78, 93, 217, 254, 228, 24,
+       76, 72, 119, 22, 61, 12, 196, 199, 107, 120, 216, 245>>} = CashAddr.decode_payload(data)
+  end
 end
