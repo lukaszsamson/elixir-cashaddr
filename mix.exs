@@ -11,6 +11,7 @@ defmodule CashAddr.MixProject do
       elixir: "~> 1.5",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      dialyzer: [plt_local_path: "priv/plts", plt_core_path: "priv/plts"],
       description: description(),
       package: package(),
       name: "CashAddr",
@@ -32,6 +33,8 @@ defmodule CashAddr.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:spec_lint, "~> 0.1", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.19", only: :dev, runtime: false},
       {:jason, "~> 1.4", only: :test}
     ]

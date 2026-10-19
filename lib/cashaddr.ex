@@ -6,7 +6,7 @@ defmodule CashAddr do
   """
 
   # Encoding character set. Maps data value -> char
-  for {encoding, value} <- Enum.with_index('qpzry9x8gf2tvdw0s3jn54khce6mua7l') do
+  for {encoding, value} <- Enum.with_index(~c"qpzry9x8gf2tvdw0s3jn54khce6mua7l") do
     defp do_encode32(unquote(value)), do: unquote(encoding)
     defp do_decode32(unquote(encoding)), do: unquote(value)
   end
@@ -102,7 +102,7 @@ defmodule CashAddr do
          pos = len - pos - 1,
          {_, false} <- {:empty_hrp, pos < 1},
          {_, false} <- {:short_cs, pos + 9 > len},
-         <<hrp::binary-size(pos), @separator, data::binary>> = bech,
+         {hrp, <<@separator, data::binary>>} = :erlang.split_binary(bech, pos),
          data_charlist =
            (for c <- :binary.bin_to_list(data) do
               do_decode32(c)
@@ -118,9 +118,8 @@ defmodule CashAddr do
          data = Enum.slice(data_charlist, 0, data_len - 8) do
       len_bits = (data_len - 8) * 5
       bits = div(len_bits, 8) * 8
-      padding_length = rem(len_bits, 8)
 
-      <<decoded::bits-size(bits), _::size(padding_length)>> =
+      <<decoded::bits-size(^bits), _::bits>> =
         for d <- data, into: <<0::size(0)>>, do: <<d::size(5)>>
 
       {:ok, {hrp, decoded}}
@@ -131,7 +130,6 @@ defmodule CashAddr do
       {:oor_data, _} -> {:error, "Invalid data"}
       {:short_cs, _} -> {:error, "Too short checksum"}
       {:cs, _} -> {:error, "Invalid checksum"}
-      _ -> {:error, "Unknown error"}
     end
   end
 
